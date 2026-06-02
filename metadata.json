@@ -1,10 +1,11 @@
 {
   "name": "Ignore Lid",
-  "description": "Ignores the lid switch action",
+  "description": "Temporarily blocks the lid switch via logind Inhibit",
   "uuid": "ignore-lid@gnome-extensions.mfloto.com",
   "shell-version": [
     "49", "50"
   ],
   "url": "https://github.com/mfloto/ignore-lid",
-  "version-name": "1.0"
+  "version-name": "1.1.0",
+  "license": "GPL-2.0-or-later"
 }

@@ -24,8 +24,8 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
-	// Install ESLint (Node.js) and Shexli (Python)
-	"postCreateCommand": "npm install -g eslint && pipx install shexli",
+	// Install dev dependencies (eslint + gjs plugin) and Shexli (Python)
+	"postCreateCommand": "npm install && pipx install shexli",
 
 	// Configure tool-specific properties.
 	"customizations": {

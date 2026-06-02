@@ -1,0 +1,14 @@
+{
+  "name": "ignore-lid",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gnome Shell extension that temporarily blocks the lid switch via logind Inhibit",
+  "license": "GPL-2.0-or-later",
+  "scripts": {
+    "lint": "eslint extension.js",
+    "pack": "gnome-extensions pack --force"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  }
+}

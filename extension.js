@@ -7,6 +7,20 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 import { QuickToggle, SystemIndicator } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 
+const LogindInterface = `<node>
+<interface name="org.freedesktop.login1.Manager">
+    <method name="Inhibit">
+        <arg type="s" name="what" direction="in"/>
+        <arg type="s" name="who" direction="in"/>
+        <arg type="s" name="why" direction="in"/>
+        <arg type="s" name="mode" direction="in"/>
+        <arg type="h" name="fd" direction="out"/>
+    </method>
+</interface>
+</node>`;
+
+const LogindProxy = Gio.DBusProxy.makeProxyWrapper(LogindInterface);
+
 const IgnoreLidToggle = GObject.registerClass(
     class IgnoreLidToggle extends QuickToggle {
         constructor() {
@@ -49,20 +63,6 @@ const IgnoreLidIndicator = GObject.registerClass(
 
 export default class QuickSettingsIgnoreLidExtension extends Extension {
     enable() {
-        const LogindInterface = `<node>
-        <interface name="org.freedesktop.login1.Manager">
-            <method name="Inhibit">
-                <arg type="s" name="what" direction="in"/>
-                <arg type="s" name="who" direction="in"/>
-                <arg type="s" name="why" direction="in"/>
-                <arg type="s" name="mode" direction="in"/>
-                <arg type="h" name="fd" direction="out"/>
-            </method>
-        </interface>
-        </node>`;
-
-        const LogindProxy = Gio.DBusProxy.makeProxyWrapper(LogindInterface);
-
         this._inhibitorFd = null;
         this._inhibitRequestInProgress = false;
         this._logindProxy = new LogindProxy(
@@ -123,29 +123,40 @@ export default class QuickSettingsIgnoreLidExtension extends Extension {
                     return;
                 }
 
-                // If the extension was disabled during the roundtrip, the user toggled the 
+                const [fdHandle] = result;
+
+                // If the extension was disabled during the roundtrip, the user toggled the
                 // switch back OFF, or an FD is already tracked, release the new handle to prevent leaks.
-                if (!this._indicator || !this._indicator.toggle || !this._indicator.toggle.checked || this._inhibitorFd !== null) {
-                    let [fdHandle] = result;
-                    if (fdList) {
-                        let dynamicFd = fdList.get(fdHandle);
-                        try {
-                            GLib.close(dynamicFd);
-                        } catch (e) {
-                            console.warn(`[ignore-lid-extension] Failed to close dynamic FD: ${e.message}`);
-                        }
-                    }
+                const guardMissed = !this._indicator ||
+                    !this._indicator.toggle ||
+                    !this._indicator.toggle.checked ||
+                    this._inhibitorFd !== null;
+
+                if (guardMissed) {
+                    this._releaseFd(fdList, fdHandle);
                     return;
                 }
 
-                let [fdHandle] = result;
                 if (fdList) {
                     this._inhibitorFd = fdList.get(fdHandle);
-                    console.debug(`[ignore-lid-extension] DEBUG: fdHandle = ${fdHandle}, this._inhibitorFd = ${this._inhibitorFd}`);
                     console.log('[ignore-lid-extension] Lid-switch ignored.');
+                } else {
+                    console.warn('[ignore-lid-extension] logind returned no FD list; lid-switch NOT ignored.');
                 }
             }
         );
+    }
+
+    _releaseFd(fdList, fdHandle) {
+        if (!fdList) {
+            console.warn('[ignore-lid-extension] Cannot release FD: fdList missing.');
+            return;
+        }
+        try {
+            GLib.close(fdList.get(fdHandle));
+        } catch (e) {
+            console.warn(`[ignore-lid-extension] Failed to release FD: ${e.message}`);
+        }
     }
 
     unblockLidSwitch() {

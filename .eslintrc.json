@@ -1,0 +1,49 @@
+{
+  "root": true,
+  "env": {
+    "es2022": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "globals": {
+    "GObject": "readonly",
+    "Gio": "readonly",
+    "GLib": "readonly",
+    "Gdk": "readonly",
+    "Gtk": "readonly",
+    "Meta": "readonly",
+    "Shell": "readonly",
+    "St": "readonly",
+    "Clutter": "readonly",
+    "Main": "readonly",
+    "Imports": "readonly",
+    "ARGV": "readonly",
+    "Debugger": "readonly",
+    "log": "readonly",
+    "logError": "readonly",
+    "print": "readonly",
+    "printerr": "readonly",
+    "_": "readonly",
+    "N_": "readonly",
+    "C_": "readonly",
+    "ngettext": "readonly",
+    "TextEncoder": "readonly",
+    "TextDecoder": "readonly",
+    "setTimeout": "readonly",
+    "setInterval": "readonly",
+    "clearTimeout": "readonly",
+    "clearInterval": "readonly",
+    "window": "readonly",
+    "console": "readonly",
+    "Extension": "readonly",
+    "QuickToggle": "readonly",
+    "SystemIndicator": "readonly"
+  },
+  "rules": {
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "no-console": "off"
+  },
+  "ignorePatterns": ["*.zip", "node_modules/", "schemas/"]
+}
